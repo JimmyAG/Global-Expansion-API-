@@ -1,0 +1,62 @@
+services:
+  # MySQL Database Service
+  mysql-db:
+    image: mysql:8.0
+    container_name: expanders360_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - '${MYSQL_LOCAL_PORT}:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - backend-network
+
+  # MongoDB Service
+  mongodb:
+    image: mongo:6.0
+    container_name: expanders360_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    ports:
+      - '${MONGO_LOCAL_PORT}:27017'
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - backend-network
+
+  # NestJS Application Service
+  # nestjs-app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: expanders360_nestjs_app
+  #   restart: unless-stopped
+  #   env_file:
+  #     - .env
+  #   ports:
+  #     - '3000:3000' # Maps local port 3000 to container port 3000
+  #   depends_on:
+  #     - mysql-db
+  #     - mongodb
+  #   networks:
+  #     - backend-network
+
+# Data persistence volumes
+volumes:
+  mysql_data:
+  mongo_data:
+
+# Containers network
+networks:
+  backend-network:
+    driver: bridge
