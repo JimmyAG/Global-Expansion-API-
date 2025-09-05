@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { User } from '@database/mysql/entities';
+import { SanitizedRequestUser } from './interfaces/sanitized-typeorm-user.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -27,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<User> {
+  async validate(payload: JwtPayload): Promise<SanitizedRequestUser> {
     const user = await this.usersRepository.findOne({
       where: { id: payload.sub },
     });
@@ -35,6 +36,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
-    return user;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, projects, ...sanitizedUser } = user;
+    return sanitizedUser;
   }
 }
