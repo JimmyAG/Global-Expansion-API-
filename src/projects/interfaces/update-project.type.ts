@@ -1,3 +1,3 @@
-import { CreateProjectDto } from '../dtos/create-project.dto';
+import { CreateNewProject } from './create-new-project.interface';
 
-export type UpdateProject = Partial<CreateProjectDto>;
+export type UpdateProject = Partial<CreateNewProject>;
