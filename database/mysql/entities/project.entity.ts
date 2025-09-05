@@ -9,6 +9,7 @@ import {
 import { AuditableEntity } from './auditable.entity';
 import { Match } from './match.entity';
 import { User } from './user.entity';
+import { Service } from './vendor.entity';
 
 export enum ProjectStatus {
   ACTIVE = 'active',
@@ -32,7 +33,7 @@ export class Project extends AuditableEntity {
   country: string;
 
   @Column('json', { array: false, default: null, nullable: true })
-  services_needed: string[];
+  services_needed: Service[];
 
   @Column({ type: 'decimal', precision: 10, scale: 2, unsigned: true })
   budget: number;

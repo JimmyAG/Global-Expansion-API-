@@ -1,9 +1,10 @@
-import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn, Unique } from 'typeorm';
 import { AuditableEntity } from './auditable.entity';
 import { Project } from './project.entity';
 import { Vendor } from './vendor.entity';
 
 @Entity('matches')
+@Unique('uq_project_vendor', ['projectId', 'vendorId'])
 export class Match extends AuditableEntity {
   @Column({ type: 'uuid', name: 'project_id' })
   projectId: string;

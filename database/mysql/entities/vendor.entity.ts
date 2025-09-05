@@ -2,16 +2,23 @@ import { Entity, Column, OneToMany } from 'typeorm';
 import { AuditableEntity } from './auditable.entity';
 import { Match } from './match.entity';
 
+export interface Service {
+  id: string;
+  name: string;
+  industry: string;
+  description?: string;
+}
+
 @Entity('vendors')
 export class Vendor extends AuditableEntity {
   @Column({ type: 'varchar', length: 255, unique: true })
   name: string;
 
-  @Column('json', { array: false, default: null, nullable: true })
+  @Column({ type: 'json', nullable: true })
   countries_supported: string[];
 
   @Column('json', { array: false, default: null, nullable: true })
-  services_offered: string[];
+  services_offered: Service[];
 
   @Column({
     type: 'decimal',
