@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class InitTables1756831315374 implements MigrationInterface {
-  name = 'InitTables1756831315374';
+export class InitTables1757026995296 implements MigrationInterface {
+  name = 'InitTables1757026995296';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
@@ -17,7 +17,7 @@ export class InitTables1756831315374 implements MigrationInterface {
       `CREATE TABLE \`projects\` (\`id\` varchar(36) NOT NULL, \`created_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deleted_at\` datetime(6) NULL, \`user_id\` varchar(255) NOT NULL, \`country\` varchar(255) NOT NULL, \`services_needed\` json NULL, \`budget\` decimal(10,2) UNSIGNED NOT NULL, \`status\` enum ('active', 'completed', 'cancelled') NOT NULL DEFAULT 'active', INDEX \`IDX_8e093b4c38789645d724de4f84\` (\`country\`, \`status\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
-      `CREATE TABLE \`matches\` (\`id\` varchar(36) NOT NULL, \`created_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deleted_at\` datetime(6) NULL, \`project_id\` varchar(255) NOT NULL, \`vendor_id\` varchar(255) NOT NULL, \`score\` decimal(5,2) NOT NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE \`matches\` (\`id\` varchar(36) NOT NULL, \`created_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deleted_at\` datetime(6) NULL, \`project_id\` varchar(255) NOT NULL, \`vendor_id\` varchar(255) NOT NULL, \`score\` decimal(5,2) NOT NULL, UNIQUE INDEX \`uq_project_vendor\` (\`project_id\`, \`vendor_id\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
       `CREATE TABLE \`vendors\` (\`id\` varchar(36) NOT NULL, \`created_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`updated_at\` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), \`deleted_at\` datetime(6) NULL, \`name\` varchar(255) NOT NULL, \`countries_supported\` json NULL, \`services_offered\` json NULL, \`rating\` decimal(3,2) UNSIGNED NOT NULL DEFAULT '0.00', \`response_sla_hours\` int UNSIGNED NOT NULL, UNIQUE INDEX \`IDX_83065ec2a2c5052786c122e95b\` (\`name\`), PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
@@ -47,6 +47,7 @@ export class InitTables1756831315374 implements MigrationInterface {
       `DROP INDEX \`IDX_83065ec2a2c5052786c122e95b\` ON \`vendors\``,
     );
     await queryRunner.query(`DROP TABLE \`vendors\``);
+    await queryRunner.query(`DROP INDEX \`uq_project_vendor\` ON \`matches\``);
     await queryRunner.query(`DROP TABLE \`matches\``);
     await queryRunner.query(
       `DROP INDEX \`IDX_8e093b4c38789645d724de4f84\` ON \`projects\``,
