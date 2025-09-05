@@ -15,6 +15,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./mysql/conf.d:/etc/mysql/conf.d
     networks:
       - backend-network
 
@@ -31,6 +32,21 @@ services:
       - '${MONGO_LOCAL_PORT}:27017'
     volumes:
       - mongo_data:/data/db
+    networks:
+      - backend-network
+
+  redis:
+    image: redis:7.4.1
+    container_name: redis
+    ports:
+      - 6379:6379
+
+  mailhog:
+    image: 'mailhog/mailhog'
+    container_name: 'mailhog'
+    ports:
+      - 8025:8025
+      - 1025:1025
     networks:
       - backend-network
 
