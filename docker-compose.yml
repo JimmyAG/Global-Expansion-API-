@@ -40,6 +40,8 @@ services:
     container_name: redis
     ports:
       - 6379:6379
+    networks:
+      - backend-network
 
   mailhog:
     image: 'mailhog/mailhog'
@@ -51,21 +53,26 @@ services:
       - backend-network
 
   # NestJS Application Service
-  # nestjs-app:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: expanders360_nestjs_app
-  #   restart: unless-stopped
-  #   env_file:
-  #     - .env
-  #   ports:
-  #     - '3000:3000' # Maps local port 3000 to container port 3000
-  #   depends_on:
-  #     - mysql-db
-  #     - mongodb
-  #   networks:
-  #     - backend-network
+  nestjs-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expanders360_nestjs_app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: docker
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    env_file:
+      - .env.docker
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mysql-db
+      - mongodb
+      - redis
+    networks:
+      - backend-network
 
 # Data persistence volumes
 volumes:
