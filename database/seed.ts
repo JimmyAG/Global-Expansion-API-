@@ -6,25 +6,57 @@ import {
   User,
   UserRole,
   Vendor,
-} from './entities';
-import { MySQLDataSource } from './datasource';
+} from './mysql/entities';
+import { MySQLDataSource } from './mysql/datasource';
 import { DataSource, EntityManager } from 'typeorm';
 import { faker } from '@faker-js/faker';
 import { v4 as uuidv4 } from 'uuid';
 import { parseSeedArgs } from 'cli/yargs';
+import { MongoClient, Db } from 'mongodb';
+import {
+  ResearchDocument,
+  ResearchDocumentDocument,
+  ResearchDocumentSchema,
+} from './mongodb/schemas/research-document.schema';
+import mongoose, { Connection } from 'mongoose';
+import { documentTags, industries, services } from '@app/constants';
+import { mongodbConfig } from '@app/core/config/database.config';
 
+// MongoDB
+export const generateResearchDocument = async (
+  mongoConnection: Connection,
+  projectId: string,
+): Promise<ResearchDocumentDocument> => {
+  const ResearchDocumentModel = mongoConnection.model<ResearchDocument>(
+    ResearchDocument.name,
+    ResearchDocumentSchema,
+  );
+
+  const doc = new ResearchDocumentModel({
+    projectId,
+    title: faker.lorem.sentence({ min: 3, max: 7 }),
+    content: faker.lorem.paragraphs({ min: 1, max: 3 }),
+    tags: faker.helpers.arrayElements(documentTags, { min: 1, max: 4 }),
+  });
+
+  return doc.save();
+};
+
+async function dropCollection(db: Db, collectionName: string) {
+  const collections = await db
+    .listCollections({ name: collectionName })
+    .toArray();
+  if (collections.length > 0) {
+    await db.collection(collectionName).deleteMany({});
+    console.log(`Collection "${collectionName}" cleared`);
+  }
+}
+
+// MySQL database functions
 const generateService = (): Service => {
-  const industries = [
-    'Technology',
-    'Marketing',
-    'Design',
-    'Consulting',
-    'Finance',
-  ];
-
   return {
     id: uuidv4(),
-    name: `${faker.commerce.productName()}`,
+    name: faker.helpers.arrayElement(services),
     industry: faker.helpers.arrayElement(industries),
     description: faker.commerce.productDescription(),
   };
@@ -128,7 +160,7 @@ const generateClients = async (
 
 const generateProjects = async (
   MySQLDataSourceManager: EntityManager,
-  // count: number,
+  mongoConnection: Connection,
 ) => {
   const allUsers = await MySQLDataSourceManager.find(User);
   const projects: Project[] = [];
@@ -143,7 +175,7 @@ const generateProjects = async (
       const randomStatus =
         statusValues[Math.floor(Math.random() * statusValues.length)];
 
-      const vendor = MySQLDataSourceManager.create(Project, {
+      const project = MySQLDataSourceManager.create(Project, {
         country: faker.location.country(),
         services_needed,
         budget: faker.number.float({
@@ -155,11 +187,18 @@ const generateProjects = async (
         user_id: user.id,
       });
 
-      projects.push(vendor);
+      projects.push(project);
     }
   });
 
-  await MySQLDataSourceManager.save(projects);
+  const savedProjects = await MySQLDataSourceManager.save(projects);
+
+  for (const project of savedProjects) {
+    const numDocs = Math.floor(Math.random() * 3) + 1;
+    for (let i = 0; i < numDocs; i++) {
+      await generateResearchDocument(mongoConnection, project.id);
+    }
+  }
 };
 
 const dropTable = async (dataSource: DataSource, tableName: string) => {
@@ -186,16 +225,32 @@ const cleanDb = async (dataSource: DataSource): Promise<void> => {
 };
 
 async function runSeeds() {
-  let existingAdminUser = false;
+  // Init
   await MySQLDataSource.initialize();
-  const seedOptions = parseSeedArgs();
-  const db = MySQLDataSource;
+  const mysqlDb = MySQLDataSource;
   const MySQLDataSourceManager = MySQLDataSource.manager;
+  const uri = mongodbConfig.uri as string;
+  const dbName = process.env.MONGO_DB || 'mongodb';
+
+  const client = new MongoClient(uri);
+  await client.connect();
+  const mongoDb = client.db(dbName);
+  const mongoConnection: Connection = await mongoose
+    .createConnection(uri)
+    .asPromise();
+
+  const seedOptions = parseSeedArgs();
+  let existingAdminUser = false;
 
   // Clear existing data
   if (seedOptions.truncateTables) {
     console.log('cleaning');
-    await cleanDb(db);
+
+    // Clear MySQL DB
+    await cleanDb(mysqlDb);
+
+    // Clear Mongo DB collection
+    await dropCollection(mongoDb, 'researchdocuments');
   }
 
   // Generate 1000 client users by default
@@ -205,7 +260,7 @@ async function runSeeds() {
   const numberOfVendors = seedOptions.vendorCount;
   await generateVendors(MySQLDataSourceManager, numberOfVendors);
 
-  await generateProjects(MySQLDataSourceManager);
+  await generateProjects(MySQLDataSourceManager, mongoConnection);
 
   if (seedOptions.superUser) {
     const existingAdmin = await MySQLDataSourceManager.findOne(User, {
