@@ -11,6 +11,12 @@ export abstract class ProjectsServiceAbstract {
 
   abstract findProjectsByUserId(userId: string): Promise<Project[]>;
 
+  abstract findProjectsById(projectId: string): Promise<Project>;
+
+  abstract rebuildProjectMatches(
+    projectId: string,
+  ): Promise<{ message: string }>;
+
   abstract updateProject(
     userId: string,
     projectId: string,

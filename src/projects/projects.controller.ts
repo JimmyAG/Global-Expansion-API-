@@ -77,6 +77,29 @@ export class ProjectsController {
     }
   }
 
+  @Get('/:id/matches/rebuild')
+  @Roles(UserRole.CLIENT)
+  @ApiResponse({
+    status: 200,
+    description: 'Project matches rebuilt successfully.',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 404, description: 'Project not found.' })
+  rebuildProjectMatches(
+    @Req() req: RequestWithUser,
+    @Param('id') projectId: string,
+  ) {
+    if (!req.user || !req.user.id) {
+      throw new Error('User not authenticated or user ID not found.');
+    }
+
+    try {
+      return this.projectsService.rebuildProjectMatches(projectId);
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
   @Post('/new')
   @Roles(UserRole.CLIENT)
   @ApiResponse({ status: 201, description: 'Project created successfully.' })

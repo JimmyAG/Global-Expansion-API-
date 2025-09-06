@@ -8,6 +8,7 @@ import { ISendMailOptions } from '@nestjs-modules/mailer';
 import { SanitizedRequestUser } from '@app/auth/interfaces/sanitized-typeorm-user.type';
 import { CreateNewProject } from './interfaces/create-new-project.interface';
 import { UpdateProject } from './interfaces/update-project.type';
+import { MatchesServiceAbstract } from '@app/matches/abstracts/matches.service.abstract';
 
 @Injectable()
 export class ProjectsService extends ProjectsServiceAbstract {
@@ -15,6 +16,8 @@ export class ProjectsService extends ProjectsServiceAbstract {
     @InjectRepository(Project)
     private readonly projectsRepo: Repository<Project>,
     @Inject(MailService) private readonly mailService: MailService,
+    @Inject(MatchesServiceAbstract)
+    private readonly matchesService: MatchesServiceAbstract,
   ) {
     super();
   }
@@ -53,6 +56,18 @@ export class ProjectsService extends ProjectsServiceAbstract {
     return projects;
   }
 
+  async findProjectsById(projectId: string): Promise<Project> {
+    const project = await this.projectsRepo.findOne({
+      where: {
+        id: projectId,
+      },
+    });
+
+    if (!project) throw new NotFoundException();
+
+    return project;
+  }
+
   async getProjectMatchesById(
     userId: string,
     projectId: string,
@@ -72,6 +87,11 @@ export class ProjectsService extends ProjectsServiceAbstract {
     }
 
     return projectWithMatches.matches || [];
+  }
+
+  async rebuildProjectMatches(projectId: string) {
+    await this.matchesService.rebuildProjectMatches(projectId);
+    return { message: 'Project matches were successfully rebuilt' };
   }
 
   async updateProject(
