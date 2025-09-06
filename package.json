@@ -23,7 +23,7 @@
     "typeorm:migration:run": "npm run typeorm -- migration:run -d ./database/mysql/datasource.ts",
     "typeorm:migration:revert": "npm run typeorm -- migration:revert -d ./database/mysql/datasource.ts",
     "typeorm:migration:create": "npm run typeorm -- migration:create ./database/migrations/$npm_config_name",
-    "typeorm:seed": "ts-node -r tsconfig-paths/register database/mysql/seed.ts",
+    "seed": "ts-node -r tsconfig-paths/register database/seed.ts",
     "seed:help": "npm run typeorm:seed -- --help"
   },
   "dependencies": {
