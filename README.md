@@ -325,7 +325,7 @@ The `calculate_match_score` function (defined in `database/migrations/1757027111
 
 The exact formula for `calculate_match_score` is:
 
-````
+```
 
 services_overlap \* 2 + rating + SLA_weight
 
@@ -339,5 +339,3 @@ These are the vague points that I had to either find a workaround for / ditch en
 
 1. `SLA_weight`: wasn't clear so I had to come up with condition to figure it out.
 2. `Flagging vendors`: also isn't clear, how is that helpful in the context of the task, I'm not sure! because we aren't updating anything related to whether a vendor can be matched after expiring what happens then and what do we calculate the expiry date against!
-```
-````
