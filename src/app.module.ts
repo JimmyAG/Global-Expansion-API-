@@ -9,8 +9,6 @@ import databaseConfig from './core/config/database.config';
 import authConfig from './core/config/auth.config';
 import bullmqConfig from './core/config/bullmq.config';
 import { User } from '@database/mysql/entities';
-import { RedisModule } from './redis/redis.module';
-import { TestRedisModule } from './test-redis/test-redis.module';
 import { QueueOptions } from 'bullmq';
 import { BullModule } from '@nestjs/bullmq';
 import { UsersModule } from './users/users.module';
@@ -18,13 +16,15 @@ import { ProjectsModule } from './projects/projects.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { MailModule } from './mail/mail.module';
 import { ResearchDocumentsModule } from './research-documents/research-documents.module';
+import { MatchesModule } from './matches/matches.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [authConfig, bullmqConfig, databaseConfig],
-      envFilePath: '.env',
+      envFilePath: process.env.NODE_ENV === 'docker' ? '.env.docker' : '.env',
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -69,13 +69,13 @@ import { ResearchDocumentsModule } from './research-documents/research-documents
     }),
     TypeOrmModule.forFeature([User]),
     AuthModule,
-    RedisModule,
-    TestRedisModule,
     MailModule,
     UsersModule,
     ProjectsModule,
     VendorsModule,
     ResearchDocumentsModule,
+    MatchesModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

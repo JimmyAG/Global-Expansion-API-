@@ -5,7 +5,9 @@ import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import { MongooseModuleOptions } from '@nestjs/mongoose';
 
-dotenvConfig({ path: '.env' });
+const envFilePath = process.env.NODE_ENV === 'docker' ? '.env.docker' : '.env';
+
+dotenvConfig({ path: envFilePath });
 
 const isDocker = process.env.NODE_ENV === 'docker';
 

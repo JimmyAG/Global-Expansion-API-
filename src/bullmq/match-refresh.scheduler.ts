@@ -11,7 +11,7 @@ export class MatchesRefreshScheduler implements OnModuleInit {
     await this.queue.upsertJobScheduler(
       'daily-refresh',
       // { pattern: '0 3 * * *' }, // every day at 3:00 AM
-      { pattern: '*/1 * * * *' }, // every minute for testing purposes
+      { pattern: '*/3 * * * *' }, // every minute for testing purposes
       {
         name: 'refresh-matches-task',
         opts: {
