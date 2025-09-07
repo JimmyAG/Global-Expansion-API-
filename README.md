@@ -93,7 +93,8 @@ To set up and run this project locally, follow these steps:
     docker compose up -d
     ```
 
-    You then could skip step 5 part of running the migration and seeding
+    You then could skip step 5, 6, and 7. instead of running the migration and seeding.
+    no need to do anything else apart from setting the env files correctly and run docker command
 
 5.  **Database Setup (MySQL):**
 
@@ -307,6 +308,10 @@ The API uses JWT for authentication. Endpoints requiring authentication will nee
 ## Mailing Service
 
 The `docker-compose.yml` file contains a local mailing service called `mailhog` running on port: `8025` where you will have and inbox and receive all mail sent by the nest app
+
+## Redis
+
+Redis is running through BullMQ, since it is not needed elsewhere as inferred by the task!
 
 ## Matching Formula
 
